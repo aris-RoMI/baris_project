@@ -1,0 +1,9 @@
+pip install lark
+pip install catkin_pkg
+pip install empy==3.3.4
+sudo apt install ros-humble-ament-cmake
+
+package.xml에 추가
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>rosidl_default_generators</build_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
