@@ -76,9 +76,6 @@ class RobotSystem:
             request_list = [request.cmd, request.par1, request.par2, request.par3, request.par4, request.par5]
             response.component_cd = DeviceCode.ROBOT
             response.seq_no = str(datetime.datetime.now())
-            print("#################33")
-            print(self.request_cnt)
-            print(request.cmd)
             if request.cmd == Command.RESET:
                 self.request_cnt = Constants.ZERO
                 response.status_cd = DeviceStatus.STANDBY
