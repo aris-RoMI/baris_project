@@ -1,6 +1,7 @@
 from setuptools import find_packages, setup
+import glob
 
-package_name = 'robot_system'
+package_name = 'baris_UI'
 
 setup(
     name=package_name,
@@ -10,20 +11,20 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name + '/ui/', glob.glob('src/' + package_name + '/ui/*.ui')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='xyzcorp',
-    maintainer_email='martin@xyzcorp.io',
+    maintainer='joe',
+    maintainer_email='dlwlgh0106@gmail.com',
     description='TODO: Package description',
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'RobotSystemNode = robot_system.RobotSystemNode:main',
-            'DispenserNode = robot_system.DispenserNode:main',
             'baris_ui = baris_UI.baris_ui:main',
             'robot_control_service = baris_UI.robot_control_service:main',
+            "robot_service_client = baris_UI.RobotServiceClient:main",
         ],
     },
 )
