@@ -90,7 +90,7 @@ class MainWindow(QMainWindow, baris_ui, Node):
                     str(self.rows[self.current_stage][6])
                 )
             if response.response_cd == ResponseCode.SUCCESS:
-                print(f"{self.current_stage} Success!")
+                print(f"{self.current_stage + 1} Success!")
                 self.current_stage += 1
             else:
                 print(f"Error occurred: {response.result}")

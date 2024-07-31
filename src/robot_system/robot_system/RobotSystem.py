@@ -203,10 +203,8 @@ class RobotSystem:
             print(traceback.format_exc())
 
         finally:
-            print(self.request_cnt)
             if self.request_cnt == 23:
                 self.request_cnt = 0
-                # self.request_pos = 0
             return response
         
     def make_str(self, result_list):
