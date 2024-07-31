@@ -1,13 +1,19 @@
 import sys, os
 import sqlite3
 import rclpy
+from rclpy.node import Node
 import time
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QTableWidget, QTableWidgetItem
 from ament_index_python.packages import get_package_share_directory
+
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+from library.Constants import ResponseCode, DispenseCommand
 from message.srv import RobotService
 from baris_UI.RobotServiceClient import RobotServiceClient
+from baris_UI.dispense_service_client import DispenseServiceClient
+from baris_UI.robot_status_subscription_node import ROSNodeSignals, RobotStatusSubscription
+from rclpy.executors import MultiThreadedExecutor
 from threading import Thread
 
 
@@ -21,14 +27,18 @@ baris_ui_file = os.path.join(get_package_share_directory("baris_UI"), "ui", "bar
 # print(baris_ui_file)
 baris_ui = uic.loadUiType(baris_ui_file)[0]
 
-class MainWindow(QMainWindow, baris_ui):
-    def __init__(self, control_node):
+class MainWindow(QMainWindow, baris_ui, Node):
+    def __init__(self, robot_control_node, dispense_control_node):
         super().__init__()
         self.setupUi(self)
-        self.control_node = control_node
+        self.robot_control_node = robot_control_node
+        self.dispense_control_node = dispense_control_node
+        
+        self.signals = ROSNodeSignals()
+        self.signals.robot_status_received.connect(self.update_robot_status)
 
         self.setWindowTitle("SQLite3 Data Viewer")
-
+        
         self.showCommandBtn.clicked.connect(self.load_data)
         self.sendServiceRequestBtn.clicked.connect(self.send_service_request)
 
@@ -63,31 +73,57 @@ class MainWindow(QMainWindow, baris_ui):
     def send_service_request(self):
         current_stage = 0
         while current_stage < len(self.rows):
-            response = self.control_node.send_request(
-                str(self.rows[current_stage][0]),
-                str(self.rows[current_stage][1]),
-                str(self.rows[current_stage][2]),
-                str(self.rows[current_stage][3]),
-                str(self.rows[current_stage][4]),
-                str(self.rows[current_stage][5]),
-                str(self.rows[current_stage][6])
-            )
-            print(response)
-            current_stage += 1
-            time.sleep(1)  # Optional: sleep between requests
+            if self.rows[current_stage][1] == DispenseCommand.COFFEE_ON or self.rows[current_stage][1] == DispenseCommand.WATER_TOGGLE:
+                response = self.dispense_control_node.send_request(
+                    "",
+                    "",
+                    self.rows[current_stage][1],
+                )
+            else:
+                response = self.robot_control_node.send_request(
+                    str(self.rows[current_stage][0]),
+                    str(self.rows[current_stage][1]),
+                    str(self.rows[current_stage][2]),
+                    str(self.rows[current_stage][3]),
+                    str(self.rows[current_stage][4]),
+                    str(self.rows[current_stage][5]),
+                    str(self.rows[current_stage][6])
+                )
+            if response.response_cd == ResponseCode.SUCCESS:
+                # 성공적인 응답일 경우
+                current_stage += 1
+            else:
+                # 실패 응답일 경우, 재시도하거나 오류 처리
+                print(f"Error occurred: {response.result}")
+            time.sleep(0.5)
+        print("Coffee DONE")
         
+    def update_robot_status(self, seq_no, node_status, component):
+        print(f"seq_no : {seq_no}")
+        print(f"node_status : {node_status}")
+        print(f"component : {component}")
         
 def main():
     rclpy.init(args=None)
-    ros_node = RobotServiceClient()  # Initialize the RegisterService node
+    
+    robot_control_node = RobotServiceClient()  # Initialize the RegisterService node
+    dispense_control_node = DispenseServiceClient()
     
     app = QApplication(sys.argv)
-    main_window = MainWindow(ros_node)
+    main_window = MainWindow(robot_control_node, dispense_control_node)
     main_window.show()
-
+    signals = main_window.signals
+    
+    robot_status_subscriber = RobotStatusSubscription(signals)
+    
     # Spin the ROS node in a separate thread
-    ros_thread = Thread(target=rclpy.spin, args=(ros_node,), daemon=True)
-    ros_thread.start()
+    multi_thread = MultiThreadedExecutor()
+    multi_thread.add_node(robot_control_node)
+    multi_thread.add_node(dispense_control_node)
+    multi_thread.add_node(robot_status_subscriber)
+    
+    thread = Thread(target=multi_thread.spin)
+    thread.start()
 
     app.exec_()
     rclpy.shutdown()

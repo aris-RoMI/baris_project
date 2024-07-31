@@ -46,19 +46,3 @@ class RobotServiceClient(Node):
             with self.condition:
                 self.condition.notify()  # Notify the waiting thread
 
-def main(args=None):
-    rclpy.init(args=args)
-    client = RobotServiceClient()
-
-    seq_no = '1'  # Example seq_no
-    cmd = "HOME_NORMAL"  # Replace with the actual command
-    par1 = "ZERO"  # Replace with the actual parameter
-
-    response = client.send_request(seq_no, cmd, par1)
-    print(f"Response: {response}")
-
-    client.destroy_node()
-    rclpy.shutdown()
-
-if __name__ == '__main__':
-    main()

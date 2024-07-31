@@ -6,7 +6,7 @@ package_name = 'baris_UI'
 setup(
     name=package_name,
     version='0.0.0',
-    packages=find_packages(exclude=['test']),
+    packages=find_packages(include=['baris_UI', 'baris_UI.*', 'library', 'library.*']),
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
@@ -23,8 +23,9 @@ setup(
     entry_points={
         'console_scripts': [
             'baris_ui = baris_UI.baris_ui:main',
-            'robot_control_service = baris_UI.robot_control_service:main',
             "robot_service_client = baris_UI.RobotServiceClient:main",
+            "dispense_service_client = baris_UI.dispense_service_client:main",
+            "robot_status_subscriber = robot_status_subscription_node:main",
         ],
     },
 )

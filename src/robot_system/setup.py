@@ -22,8 +22,6 @@ setup(
         'console_scripts': [
             'RobotSystemNode = robot_system.RobotSystemNode:main',
             'DispenserNode = robot_system.DispenserNode:main',
-            'baris_ui = baris_UI.baris_ui:main',
-            'robot_control_service = baris_UI.robot_control_service:main',
         ],
     },
 )
