@@ -1,17 +1,18 @@
 from setuptools import find_packages, setup
 import glob
+import os
 
 package_name = 'baris_UI'
 
 setup(
     name=package_name,
     version='0.0.0',
-    packages=find_packages(include=['baris_UI', 'baris_UI.*', 'library', 'library.*']),
+    packages=find_packages(include=['baris_UI', 'baris_UI.*', 'library', 'library.*', "baris_db", "baris_db.*"]),
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ('share/' + package_name + '/ui/', glob.glob('src/' + package_name + '/ui/*.ui')),
+        ('share/' + package_name + '/ui', glob.glob('src/' + package_name + '/ui/*.ui')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -25,7 +26,7 @@ setup(
             'baris_ui = baris_UI.baris_ui:main',
             "robot_service_client = baris_UI.RobotServiceClient:main",
             "dispense_service_client = baris_UI.dispense_service_client:main",
-            "robot_status_subscriber = robot_status_subscription_node:main",
+            "robot_status_subscriber = baris_UI.robot_status_subscription_node:main",
         ],
     },
 )

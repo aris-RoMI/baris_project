@@ -78,7 +78,7 @@ class RobotSystemNode(Node):
         component_list = []
         try:
             # Msg 변수 선언
-            if self.robot_system.request_cnt > 15:
+            if self.robot_system.request_cnt == 16:
                 self.get_logger().info(f"DRIP DONE")
 
             topic_msg = DispenserStatus()

@@ -83,6 +83,7 @@ class RobotSystem:
                 response.result = "RESET SEQUENCE"
 
             elif request.cmd == RobotSystem.QU5TV0VSX0NNRA[self.request_cnt] and request.par1 == RobotSystem.QU5TV0VSX1BBUkFNRVRFUg[self.request_cnt]:
+                
                 self.request_cnt += 1
                 self.before_pos = request.cmd
                 if request.cmd == RobotCommand.HOME :
@@ -202,6 +203,10 @@ class RobotSystem:
             print(traceback.format_exc())
 
         finally:
+            print(self.request_cnt)
+            if self.request_cnt == 23:
+                self.request_cnt = 0
+                # self.request_pos = 0
             return response
         
     def make_str(self, result_list):

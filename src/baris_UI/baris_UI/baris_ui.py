@@ -19,10 +19,8 @@ from baris_UI.dispense_service_client import DispenseServiceClient
 from baris_UI.robot_status_subscription_node import ROSNodeSignals, RobotStatusSubscription
 
 
-# ui 폴더 경로 설정
 ui_folder = os.path.dirname(os.path.abspath(__file__))
 
-# UI 파일 경로 설정
 baris_ui_file = os.path.join(get_package_share_directory("baris_UI"), "ui", "baris_drip_academy.ui")
 baris_ui = uic.loadUiType(baris_ui_file)[0]
 
@@ -47,21 +45,17 @@ class MainWindow(QMainWindow, baris_ui, Node):
         self.timer.timeout.connect(self.send_service_request)
 
     def load_data(self):
-        # SQLite3 데이터베이스 연결
         connection = sqlite3.connect("/home/joe/xyz/baris_project/src/baris_db/baris_db.db")
         cursor = connection.cursor()
 
-        # 데이터베이스에서 모든 데이터 가져오기
         cursor.execute("SELECT * FROM BarisCommand")
         rows = cursor.fetchall()
         self.rows = rows.copy()
 
-        # 열 제목 가져오기
         cursor.execute("PRAGMA table_info(BarisCommand)")
         columns_info = cursor.fetchall()
         column_names = [column_info[1] for column_info in columns_info]
 
-        # 테이블에 데이터 설정
         self.commandTable.setRowCount(len(rows))
         self.commandTable.setColumnCount(len(column_names))
         self.commandTable.setHorizontalHeaderLabels(column_names)
@@ -70,15 +64,15 @@ class MainWindow(QMainWindow, baris_ui, Node):
             for col_idx, col_data in enumerate(row_data):
                 self.commandTable.setItem(row_idx, col_idx, QTableWidgetItem(str(col_data)))
 
-        # 데이터베이스 연결 종료
         connection.close()
 
     def start_service_requests(self):
         self.current_stage = 0
-        self.timer.start(500)  # Call the service request method every 500 ms
+        self.timer.start(500)  
 
     def send_service_request(self):
         if self.current_stage < len(self.rows):
+            self.sendServiceRequestBtn.setEnabled(False)
             if self.rows[self.current_stage][1] == DispenseCommand.COFFEE_ON or self.rows[self.current_stage][1] == DispenseCommand.WATER_TOGGLE:
                 response = self.dispense_control_node.send_request(
                     "",
@@ -96,30 +90,28 @@ class MainWindow(QMainWindow, baris_ui, Node):
                     str(self.rows[self.current_stage][6])
                 )
             if response.response_cd == ResponseCode.SUCCESS:
+                print(f"{self.current_stage} Success!")
                 self.current_stage += 1
             else:
                 print(f"Error occurred: {response.result}")
         else:
             self.timer.stop()
+            self.sendServiceRequestBtn.setEnabled(True)
             print("Coffee DONE")
 
     def update_robot_status(self, seq_no, node_status, component):
         dt = datetime.strptime(seq_no, "%Y-%m-%d %H:%M:%S.%f")
-    
-    # Format the datetime object back into a string, including only the date and time up to seconds
         formatted_str = dt.strftime("%Y-%m-%d %H:%M:%S")
         self.currentTimeLabel.setText(formatted_str)
         current_step = node_status + "(" + component[0].status + ")"
         self.currentStepLabel.setText(current_step)
-        # print(f"seq_no : {seq_no}")
-        # print(f"node_status : {node_status}")
-        # print(f"component : {component}")
+
 
 
 def main():
     rclpy.init(args=None)
 
-    robot_control_node = RobotServiceClient()  # Initialize the RegisterService node
+    robot_control_node = RobotServiceClient() 
     dispense_control_node = DispenseServiceClient()
 
     app = QApplication(sys.argv)
